@@ -1,7 +1,8 @@
 # pricer
 A stock pricing tool.
 
-# Basic usage:
-python3 pricer.py
+## Basic usage:
+python pricer.py query_all
 
-# See shares.json for example share data.
+## Notes:
+See shares.json for example share data.
