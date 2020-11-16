@@ -1,4 +1,7 @@
-"""Stock price checker."""
+"""Stock price checker.
+
+    Copyright 2020 Joe Talbott.
+"""
 import argparse
 import json
 import requests
