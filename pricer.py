@@ -315,11 +315,13 @@ def get_current_price(symbols=None, shares_file=DEFAULT_SHARES_FILE,
 
 
 def query_one(args):
-    get_current_price(symbols=[args.symbol], verbose=args.verbose)
+    get_current_price(symbols=[args.symbol], shares_file=args.shares_file,
+                      verbose=args.verbose)
 
 
 def query_all(args):
-    get_current_price(verbose=args.verbose)
+    get_current_price(shares_file=args.shares_file,
+                      verbose=args.verbose)
 
 
 def check(args):
