@@ -98,7 +98,7 @@ def get_alert_report(symbol, price, share_data, verbose=False, agg=False):
                         precision=2,
                         width=6,
                         field_width=6,
-                        **kwargs,
+                        **kwargs
                         ),
         )
 
