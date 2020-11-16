@@ -1,0 +1,12 @@
+[
+    {
+        "name": "GOOG",
+        "cost": 1000.01,
+        "shares": 3
+    },
+	{
+        "name": "AMZN",
+        "cost": 3001.00,
+        "shares": 3
+	}
+]
