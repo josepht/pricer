@@ -109,7 +109,7 @@ def get_alert_report(symbol, price, share_data, verbose=False, agg=False):
 
 
 def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
-                     hold=False):
+                     hold=False, until=None):
     symbol_data = share_data
     cost = symbol_data.get('cost')
     shares = symbol_data.get('shares')
@@ -118,6 +118,9 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
     if hold:
         hold_str = 'H'
 
+    if until is not None:
+        hold_str = '{} {}'.format(hold_str, until)
+
     kwargs = {}
     if agg:
         kwargs['bold'] = True
@@ -125,9 +128,9 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
     if cost is None or shares is None or shares == 0.0:
         # Fake out the column width for alerts
         if verbose:
-            owned = ' '*56
+            owned = ' '*67
         else:
-            owned = ' '*46
+            owned = ' '*57
     else:
         symbol_change = price - cost
         symbol_color = ''
@@ -153,7 +156,7 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
                 color_value(shares * symbol_change,
                             field_width=11,
                             color=symbol_color, **kwargs),
-                color_value(hold_str, field_width=1, string=True,
+                color_value(hold_str, field_width=12, string=True,
                             color=symbol_color, **kwargs),
             )
         else:
@@ -169,7 +172,7 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
                 color_value(shares * symbol_change,
                             field_width=11,
                             color=symbol_color, **kwargs),
-                color_value(hold_str, field_width=1, string=True,
+                color_value(hold_str, field_width=12, string=True,
                             color=symbol_color, **kwargs),
             )
 
@@ -268,6 +271,7 @@ def get_current_price(symbols=None, shares_file=DEFAULT_SHARES_FILE,
             hide = item.get('hide', False)
             agg = item.get('agg', False)
             hold = item.get('hold', False)
+            until = item.get('until')
             if hide:
                 continue
             market_data = get_market_data(data, symbol)
@@ -301,7 +305,8 @@ def get_current_price(symbols=None, shares_file=DEFAULT_SHARES_FILE,
 
             # Add user's owned shares info
             owned = get_owned_report(symbol, price, item,
-                                     verbose=verbose, agg=agg, hold=hold)
+                                     verbose=verbose, agg=agg, hold=hold,
+                                     until=until)
 
             alert = get_alert_report(symbol, price, item,
                                      verbose=verbose, agg=agg)
