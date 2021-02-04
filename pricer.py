@@ -109,10 +109,23 @@ def get_alert_report(symbol, price, share_data, verbose=False, agg=False):
 
 
 def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
-                     hold=False, until=None):
+                     hold=False, until=None, total_shares=None,
+                     avg_price=None):
+    sum_line = None
     symbol_data = share_data
     cost = symbol_data.get('cost')
     shares = symbol_data.get('shares')
+    if total_shares is not None and total_shares > 0:
+        if avg_price is not None:
+            avg_price = (
+                (shares * cost + total_shares * avg_price) /
+                (total_shares + shares)
+            )
+    else:
+        avg_price = cost
+        total_shares = 0
+    total_shares += shares
+
     hold_str = ' '
 
     if hold:
@@ -124,6 +137,7 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
     kwargs = {}
     if agg:
         kwargs['bold'] = True
+    sum_kwargs = {'bold': True}
 
     if cost is None or shares is None or shares == 0.0:
         # Fake out the column width for alerts
@@ -133,6 +147,7 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
             owned = ' '*57
     else:
         symbol_change = price - cost
+        sum_symbol_change = price - avg_price
         symbol_color = ''
 
         if symbol_change < 0.0:
@@ -141,6 +156,7 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
             symbol_color = 'green'
 
         symbol_change_percent = symbol_change / cost * 100
+        sum_symbol_change_percent = sum_symbol_change / avg_price * 100
 
         if verbose:
             owned = "{} {} {} {} {} {}".format(
@@ -159,6 +175,22 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
                 color_value(hold_str, field_width=12, string=True,
                             color=symbol_color, **kwargs),
             )
+            sum_line = "{} {} {} {} {} {}".format(
+                color_value(cost, color=symbol_color, bold=True),
+                color_value(symbol_change, color=symbol_color, bold=True),
+                color_value(sum_symbol_change_percent,
+                            color=symbol_color,
+                            precision=2,
+                            field_width=10,
+                            percent=True, bold=True),
+                color_value(total_shares, color=symbol_color,
+                            precision=0, width=6, bold=True),
+                color_value(total_shares * sum_symbol_change,
+                            field_width=11,
+                            color=symbol_color, bold=True),
+                color_value(hold_str, field_width=12, string=True,
+                            color=symbol_color, bold=True),
+            )
         else:
             owned = "{} {} {} {} {}".format(
                 color_value(cost, color=symbol_color, **kwargs),
@@ -175,8 +207,23 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
                 color_value(hold_str, field_width=12, string=True,
                             color=symbol_color, **kwargs),
             )
+            sum_line = "{} {} {} {} {}".format(
+                color_value(avg_price, color=symbol_color, bold=True),
+                color_value(sum_symbol_change_percent,
+                            color=symbol_color,
+                            precision=2,
+                            field_width=10,
+                            percent=True, bold=True),
+                color_value(total_shares, color=symbol_color,
+                            precision=0, width=6, bold=True),
+                color_value(total_shares * sum_symbol_change,
+                            field_width=11,
+                            color=symbol_color, bold=True),
+                color_value(hold_str, field_width=12, string=True,
+                            color=symbol_color, bold=True),
+            )
 
-    return owned
+    return owned, total_shares, avg_price, sum_line
 
 
 def get_price_data(market_state, symbol_data):
@@ -266,6 +313,9 @@ def get_current_price(symbols=None, shares_file=DEFAULT_SHARES_FILE,
             data = data_result
 
         symbols_seen = []
+        last_symbol = None
+        last_symbol_count = 0
+        sum_line = None
         for item in share_data:
             symbol = item['name']
             hide = item.get('hide', False)
@@ -298,15 +348,30 @@ def get_current_price(symbols=None, shares_file=DEFAULT_SHARES_FILE,
             line = "{:>5s} {} {} {} {:>1s}".format(
                 symbol, price_str, change, percent, market_state_str)
 
-            if symbol in symbols_seen:
+            if symbol in symbols_seen and last_symbol == symbol:
                 line = "{:>40s}".format("")
             else:
                 symbols_seen.append(symbol)
 
+            if symbol == last_symbol:
+                last_symbol_count += 1
+            else:
+                total_shares = None
+                avg_price = None
+                if sum_line is not None and last_symbol_count > 0:
+                    sum_line = "{} {}".format("{:>40s}".format(""), sum_line)
+                    print(sum_line)
+                last_symbol_count = 0
+                sum_line = None
+            last_symbol = symbol
+
             # Add user's owned shares info
-            owned = get_owned_report(symbol, price, item,
-                                     verbose=verbose, agg=agg, hold=hold,
-                                     until=until)
+            owned, total_shares, avg_price, sum_line = get_owned_report(
+                symbol, price, item,
+                verbose=verbose, agg=agg, hold=hold,
+                until=until,
+                total_shares=total_shares, avg_price=avg_price
+            )
 
             alert = get_alert_report(symbol, price, item,
                                      verbose=verbose, agg=agg)
