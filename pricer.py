@@ -149,11 +149,17 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
         symbol_change = price - cost
         sum_symbol_change = price - avg_price
         symbol_color = ''
+        sum_symbol_color = ''
 
         if symbol_change < 0.0:
             symbol_color = 'red'
         elif symbol_change > 0.0:
             symbol_color = 'green'
+
+        if sum_symbol_change < 0.0:
+            sum_symbol_color = 'red'
+        elif sum_symbol_change > 0.0:
+            sum_symbol_color = 'green'
 
         symbol_change_percent = symbol_change / cost * 100
         sum_symbol_change_percent = sum_symbol_change / avg_price * 100
@@ -176,20 +182,20 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
                             color=symbol_color, **kwargs),
             )
             sum_line = "{} {} {} {} {} {}".format(
-                color_value(cost, color=symbol_color, bold=True),
-                color_value(symbol_change, color=symbol_color, bold=True),
+                color_value(cost, color=sum_symbol_color, bold=True),
+                color_value(symbol_change, color=sum_symbol_color, bold=True),
                 color_value(sum_symbol_change_percent,
-                            color=symbol_color,
+                            color=sum_symbol_color,
                             precision=2,
                             field_width=10,
                             percent=True, bold=True),
-                color_value(total_shares, color=symbol_color,
+                color_value(total_shares, color=sum_symbol_color,
                             precision=0, width=6, bold=True),
                 color_value(total_shares * sum_symbol_change,
                             field_width=11,
-                            color=symbol_color, bold=True),
+                            color=sum_symbol_color, bold=True),
                 color_value(hold_str, field_width=12, string=True,
-                            color=symbol_color, bold=True),
+                            color=sum_symbol_color, bold=True),
             )
         else:
             owned = "{} {} {} {} {}".format(
@@ -208,19 +214,19 @@ def get_owned_report(symbol, price, share_data, verbose=False, agg=False,
                             color=symbol_color, **kwargs),
             )
             sum_line = "{} {} {} {} {}".format(
-                color_value(avg_price, color=symbol_color, bold=True),
+                color_value(avg_price, color=sum_symbol_color, bold=True),
                 color_value(sum_symbol_change_percent,
-                            color=symbol_color,
+                            color=sum_symbol_color,
                             precision=2,
                             field_width=10,
                             percent=True, bold=True),
-                color_value(total_shares, color=symbol_color,
+                color_value(total_shares, color=sum_symbol_color,
                             precision=0, width=6, bold=True),
                 color_value(total_shares * sum_symbol_change,
                             field_width=11,
-                            color=symbol_color, bold=True),
+                            color=sum_symbol_color, bold=True),
                 color_value(hold_str, field_width=12, string=True,
-                            color=symbol_color, bold=True),
+                            color=sum_symbol_color, bold=True),
             )
 
     return owned, total_shares, avg_price, sum_line
@@ -322,6 +328,8 @@ def get_current_price(symbols=None, shares_file=DEFAULT_SHARES_FILE,
             agg = item.get('agg', False)
             hold = item.get('hold', False)
             until = item.get('until')
+            if until is not None:
+                hold = True
             if hide:
                 continue
             market_data = get_market_data(data, symbol)
