@@ -372,6 +372,8 @@ def get_current_price(symbols=None, shares_file=DEFAULT_SHARES_FILE,
             if hide:
                 continue
             market_data = get_market_data(data, symbol)
+            if market_data is None:
+                print(f"JOE: found no data for {symbol}")
 
             market_state = market_data.get('marketState')
             if symbol != 'ES=F' and market_state not in ['PREPRE', 'POSTPOST', 'CLOSED']:
@@ -606,8 +608,12 @@ def deuntil(args):
             if item['positions'][index].get('until') is not None:
                 del(item['positions'][index]['until'])
 
-    set_share_data(args.shares_file, all_share_data)
+            if index == -1:
+                for i, _ in enumerate(item['positions']):
+                    if item['positions'][i].get('until') is not None:
+                        del(item['positions'][i]['until'])
 
+    set_share_data(args.shares_file, all_share_data)
 
 
 def add(args):
