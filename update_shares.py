@@ -89,8 +89,10 @@ def show_closed(args):
     show_all = args.show_all
 
     date = args.date
+    end = colorama.Style.RESET_ALL
 
     total_pl = 0.0
+    closed_count = 0
     for symbol, data in sorted(share_data.items()):
         if not data:  # skip untracked symbold
             continue
@@ -99,10 +101,12 @@ def show_closed(args):
 
         total = 0.0
         count = 0
-        closed = [x for x in data if len(x) > HOLD_FIELD_COUNT]
+        closed = [x for x in data if ((len(x) > HOLD_FIELD_COUNT) and
+                  (show_all or date == x[5]))]
         if len(closed) == 0:
             continue
 
+        closed_count += len(closed)
         print(symbol.upper())
         total_shares = 0.0
         for item in sorted(closed, key=lambda r: r[5], reverse=True):
@@ -119,7 +123,6 @@ def show_closed(args):
             else:
                 fore = ""
 
-            end = colorama.Style.RESET_ALL
             if limit == -1 or count + 1 <= limit:
                 print(f"    {item[0]}: {fore}$ {pl:.3f}{end}: "
                       f"{item[3]} - {item[5]}: {item[1]} - {item[4]}")
@@ -133,7 +136,6 @@ def show_closed(args):
             else:
                 fore = ""
 
-            end = colorama.Style.RESET_ALL
             print(f"    ==============================")
             print(f"    Total: {total_shares}: ${fore}{total:.3f}{end}")
 
@@ -143,7 +145,8 @@ def show_closed(args):
         fore = colorama.Fore.GREEN
     else:
         fore = ""
-    print(f"Grand Total: {fore}{total_pl: .3f}{end}")
+    if closed_count > 0:
+        print(f"Grand Total: {fore}{total_pl: .3f}{end}")
 
 
 def show_open(args):
