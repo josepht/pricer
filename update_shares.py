@@ -30,7 +30,7 @@ def add(args):
 
     for item, values in share_data.items():
         if item.upper() == symbol:
-            share_data[item].append((shares, cost, None, dt))
+            share_data[item].append((shares, cost, until, dt))
 
     set_share_data(args.shares_file, share_data)
 
@@ -60,11 +60,84 @@ def remove(args):
                     item_count += 1
                     continue
 
-                # we cound the matching index entry
+                # we count the matching index entry
                 if held_count == index:
                     print(f"Removing index {index}")
                     values[item_count].append(price)
                     values[item_count].append(dt)
+                    share_data[symbol] = values
+                    break
+
+                held_count += 1
+                item_count += 1
+            break
+
+    set_share_data(args.shares_file, share_data)
+
+
+def deuntil(args):
+    print("Removing 'until' from position at index (0 index)")
+    share_data = get_share_data(args.shares_file)
+
+    symbol = args.symbol.upper()
+    index = args.index
+
+    for item, values in share_data.items():
+        if item.upper() == symbol:
+            print("Found {}".format(symbol))
+            if len(values) < index:
+                print("Invalid position")
+                return
+
+            item_count = 0
+            held_count = 0
+            for item in values:
+                # skip sold positions
+                if len(values[item_count]) > HOLD_FIELD_COUNT:
+                    item_count += 1
+                    continue
+
+                # we count the matching index entry
+                if held_count == index:
+                    print(f"Removing 'until' from index {index}")
+                    values[item_count][2] = None
+                    share_data[symbol] = values
+                    break
+
+                held_count += 1
+                item_count += 1
+            break
+
+    set_share_data(args.shares_file, share_data)
+
+
+def until(args):
+    print("Adding 'until' to position at index (0 index)")
+    share_data = get_share_data(args.shares_file)
+
+    symbol = args.symbol.upper()
+    index = args.index
+    until = args.until
+
+    for item, values in share_data.items():
+        if item.upper() == symbol:
+            print("Found {}".format(symbol))
+            if len(values) < index:
+                print("Invalid position")
+                return
+
+            item_count = 0
+            held_count = 0
+            for item in values:
+                # skip sold positions
+                if len(values[item_count]) > HOLD_FIELD_COUNT:
+                    item_count += 1
+                    continue
+
+                # we count the matching index entry
+                if held_count == index:
+                    print(f"Adding 'until' to index {index}")
+                    values[item_count][2] = until
                     share_data[symbol] = values
                     break
 
@@ -255,6 +328,21 @@ def parse_args():
     parser_remove.add_argument('-d', '--date', default=dt,
                                help='Date of transaction')
     parser_remove.set_defaults(func=remove)
+
+    parser_until = subparsers.add_parser(
+        'until', help='Add "until" to a new position held')
+    parser_until.add_argument('symbol', help='Stock symbol')
+    parser_until.add_argument('until', help="until note")
+    parser_until.add_argument('index', type=int, default=0, nargs='?',
+                               help='Position index')
+    parser_until.set_defaults(func=until)
+
+    parser_deuntil = subparsers.add_parser(
+        'deuntil', help='Remove "until" from a new position held')
+    parser_deuntil.add_argument('symbol', help='Stock symbol')
+    parser_deuntil.add_argument('index', type=int, default=0, nargs='?',
+                                help='Position index')
+    parser_deuntil.set_defaults(func=deuntil)
 
     parser_show_closed = subparsers.add_parser(
         'show-closed', help='Show closed positions')
