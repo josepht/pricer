@@ -91,7 +91,7 @@ def show_closed(args):
     date = args.date
 
     total_pl = 0.0
-    for symbol, data in share_data.items():
+    for symbol, data in sorted(share_data.items()):
         if not data:  # skip untracked symbold
             continue
         if symbol_req and symbol.upper() not in symbol_req:
@@ -154,7 +154,7 @@ def show_open(args):
         symbol_req = [x.upper() for x in args.symbol]
 
     total_pl = 0.0
-    for symbol, data in share_data.items():
+    for symbol, data in sorted(share_data.items()):
         if not data:  # skip untracked symbold
             continue
         if symbol_req and symbol.upper() not in symbol_req:
