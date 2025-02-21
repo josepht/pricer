@@ -143,7 +143,7 @@ def show_closed(args):
         fore = colorama.Fore.GREEN
     else:
         fore = ""
-    print(f"Grand Total: {fore}{total_pl: .3}{end}")
+    print(f"Grand Total: {fore}{total_pl: .3f}{end}")
 
 
 def show_open(args):
@@ -153,6 +153,7 @@ def show_open(args):
     if args.symbol:
         symbol_req = [x.upper() for x in args.symbol]
 
+    total_pl = 0.0
     for symbol, data in share_data.items():
         if not data:  # skip untracked symbold
             continue
@@ -172,6 +173,7 @@ def show_open(args):
 
             pl = item[1] * item[0]
             total_shares += item[0]
+            total_pl += pl
 
             if pl < 0:
                 fore = colorama.Fore.RED
@@ -181,7 +183,7 @@ def show_open(args):
                 fore = ""
 
             end = colorama.Style.RESET_ALL
-            print(f"    {item[0]}: ${fore}{pl:.3f}{end}: {item[3]}")
+            print(f"    {item[0]}: {item[1]}: ${fore}{pl:.3f}{end}: {item[3]}")
             total += pl
 
         if len(held) > 1:
@@ -195,6 +197,13 @@ def show_open(args):
             end = colorama.Style.RESET_ALL
             print(f"    ==============================")
             print(f"    Total: {total_shares}: ${fore}{total:.3f}{end}")
+    if total_pl < 0.0:
+        fore = colorama.Fore.RED
+    elif total_pl > 0.0:
+        fore = colorama.Fore.GREEN
+    else:
+        fore = ""
+    print(f"Grand Total: {fore}{total_pl: .3f}{end}")
 
 
 def get_share_data(filename):
