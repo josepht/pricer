@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
+import copy
 import datetime
 import os
 import json
@@ -25,12 +26,12 @@ def add(args):
         dt = args.date
 
     # Add the symbol if it isn't already in the share data
-    if symbol not in share_data.keys():
-        share_data[symbol] = []
+    if symbol not in share_data['open'].keys():
+        share_data['open'][symbol] = []
 
-    for item, values in share_data.items():
+    for item, values in share_data['open'].items():
         if item.upper() == symbol:
-            share_data[item].append((shares, cost, until, dt))
+            share_data['open'][item].append((shares, cost, until, dt))
 
     set_share_data(args.shares_file, share_data)
 
@@ -45,7 +46,10 @@ def remove(args):
     if args.date:
         dt = args.date
 
-    for item, values in share_data.items():
+    if symbol not in share_data['closed'].keys():
+        share_data['closed'][symbol] = []
+
+    for item, values in share_data['open'].items():
         if item.upper() == symbol:
             print("Found {}".format(symbol))
             if len(values) < index:
@@ -63,9 +67,13 @@ def remove(args):
                 # we count the matching index entry
                 if held_count == index:
                     print(f"Removing index {index}")
-                    values[item_count].append(price)
-                    values[item_count].append(dt)
-                    share_data[symbol] = values
+                    # values[item_count].append(price)
+                    # values[item_count].append(dt)
+                    new_entry = copy.copy(values[item_count])
+                    new_entry.append(price)
+                    new_entry.append(dt)
+                    del(share_data['open'][symbol][item_count])
+                    share_data['closed'][symbol].append(new_entry)
                     break
 
                 held_count += 1
@@ -82,7 +90,7 @@ def deuntil(args):
     symbol = args.symbol.upper()
     index = args.index
 
-    for item, values in share_data.items():
+    for item, values in share_data['open'].items():
         if item.upper() == symbol:
             print("Found {}".format(symbol))
             if len(values) < index:
@@ -101,7 +109,7 @@ def deuntil(args):
                 if held_count == index:
                     print(f"Removing 'until' from index {index}")
                     values[item_count][2] = None
-                    share_data[symbol] = values
+                    share_data['open'][symbol] = values
                     break
 
                 held_count += 1
@@ -119,7 +127,7 @@ def until(args):
     index = args.index
     until = args.until
 
-    for item, values in share_data.items():
+    for item, values in share_data['open'].items():
         if item.upper() == symbol:
             print("Found {}".format(symbol))
             if len(values) < index:
@@ -138,7 +146,7 @@ def until(args):
                 if held_count == index:
                     print(f"Adding 'until' to index {index}")
                     values[item_count][2] = until
-                    share_data[symbol] = values
+                    share_data['open'][symbol] = values
                     break
 
                 held_count += 1
@@ -166,7 +174,7 @@ def show_closed(args):
 
     total_pl = 0.0
     closed_count = 0
-    for symbol, data in sorted(share_data.items()):
+    for symbol, data in sorted(share_data['closed'].items()):
         if not data:  # skip untracked symbold
             continue
         if symbol_req and symbol.upper() not in symbol_req:
@@ -230,7 +238,7 @@ def show_open(args):
         symbol_req = [x.upper() for x in args.symbol]
 
     total_pl = 0.0
-    for symbol, data in sorted(share_data.items()):
+    for symbol, data in sorted(share_data['open'].items()):
         if not data:  # skip untracked symbold
             continue
         if symbol_req and symbol.upper() not in symbol_req:
@@ -298,6 +306,32 @@ def set_share_data(filename, share_data):
         json.dump(share_data, fp, indent=1)
 
 
+def fix_symbols(args):
+    print("Fixing symbols")
+    share_data = get_share_data(args.shares_file)
+
+    open_share_data = share_data['open']
+    closed_share_data = share_data['closed']
+
+    for item, values in open_share_data.items():
+        print(f"JOE: item: {item}")
+        if item not in closed_share_data:
+            closed_share_data[item] = []
+
+        new_values = []
+        for value in values:
+            print(f"JOE: value: {value}")
+            if len(value) > HOLD_FIELD_COUNT:
+                closed_share_data[item].append(value)
+            else:  # an open position
+                new_values.append(value)
+
+        open_share_data[item] = new_values
+
+    share_data['open'] = open_share_data
+    share_data['closed'] = closed_share_data
+    set_share_data(args.shares_file, share_data)
+
 
 def parse_args():
     """Parse commandline options and sub-commands."""
@@ -360,6 +394,10 @@ def parse_args():
         'show-open', help='Show open positions')
     parser_show_open.add_argument('symbol', nargs='*', help='Stock symbol')
     parser_show_open.set_defaults(func=show_open)
+
+    parser_fix_symbols = subparsers.add_parser(
+        'fix-symbols', help='Move sold positions to a new data structure')
+    parser_fix_symbols.set_defaults(func=fix_symbols)
 
     return parser.parse_args()
 
