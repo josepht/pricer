@@ -119,6 +119,31 @@ def deuntil(args):
     set_share_data(args.shares_file, share_data)
 
 
+def deuntil_all(args):
+    print("Removing 'until' from all positions")
+    share_data = get_share_data(args.shares_file)
+
+    for item, values in share_data['open'].items():
+        item_count = 0
+        held_count = 0
+        for value in values:
+            # skip sold positions
+            if len(values[item_count]) > HOLD_FIELD_COUNT:
+                item_count += 1
+                continue
+
+            # we count the matching index entry
+            if values[item_count][2] is not None:
+                values[item_count][2] = None
+
+            held_count += 1
+            item_count += 1
+
+        share_data['open'][item] = values
+
+    set_share_data(args.shares_file, share_data)
+
+
 def until(args):
     print("Adding 'until' to position at index (0 index)")
     share_data = get_share_data(args.shares_file)
@@ -377,6 +402,10 @@ def parse_args():
     parser_deuntil.add_argument('index', type=int, default=0, nargs='?',
                                 help='Position index')
     parser_deuntil.set_defaults(func=deuntil)
+
+    parser_deuntil_all = subparsers.add_parser(
+        'deuntil-all', help='Remove "until" from all positions held')
+    parser_deuntil_all.set_defaults(func=deuntil_all)
 
     parser_show_closed = subparsers.add_parser(
         'show-closed', help='Show closed positions')
