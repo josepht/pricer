@@ -56,6 +56,7 @@ for symbol in sorted(symbols):
         fore = ""
 
     end = colorama.Style.RESET_ALL
+    yellow = colorama.Fore.YELLOW
 
     note = ""
     if symbol in notes:
@@ -112,7 +113,7 @@ for symbol in sorted(symbols):
         if not tot_only:
             print(f"    [{sym_count: 3d}] {count: 8.3g} {fore}{cost: 8.02f} "
                   f"{delta: >8.3f} {delta_percent: >8.3f}% {value: >8.3f}{end} "
-                  f"{hold_str: >10} {cur_value: >8.3f}")
+                  f"{yellow}{hold_str: >10}{end} {cur_value: >8.3f}")
         sym_count += 1
 
     # Show the total values for the symbol
