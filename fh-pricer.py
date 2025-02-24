@@ -9,6 +9,7 @@ import json
 finnhub_client = finnhub.Client(api_key=API_KEY)
 
 price_data = {}
+quotes_data = {}
 
 with open(os.path.join(os.path.expanduser('~'), 'pricer.json'), 'r') as fp:
     data = json.load(fp)
@@ -18,6 +19,9 @@ with open(os.path.join(os.path.expanduser('~'), 'pricer.json'), 'r') as fp:
 
 with open(os.path.join(os.path.expanduser('~'), 'pricer_price_data.json')) as fp:
     price_data = json.load(fp)
+
+with open(os.path.join(os.path.expanduser('~'), 'pricer_quotes.json')) as fp:
+    quotes_data = json.load(fp)
 
 
 # Due to strict API usage limitations only query a few symbols
@@ -29,6 +33,7 @@ comp_gain = 0.0
 for symbol in sorted(symbols):
     # time.sleep(0.20)
     shares = symbols[symbol]
+
     if False:
         data = finnhub_client.quote(symbol)
         price = data['c']
@@ -39,8 +44,9 @@ for symbol in sorted(symbols):
         print(f"symbol {symbol} not in price data")
 
     price = price_data[symbol]['price']
-    delta = price_data[symbol]['delta']
+    delta = price - quotes_data[symbol][0]
     delta_percent = delta / price * 100
+    day_range = f"{quotes_data[symbol][2]} .. {quotes_data[symbol][3]}"
 
     if delta_percent < 0:
         fore = colorama.Fore.RED
@@ -60,7 +66,7 @@ for symbol in sorted(symbols):
     up_down = f" - {up: .2f} {down: .2f}"
     up_down = ""
     print(f"{symbol: <4} {fore}{price: >8.3f} {delta: .3f} "
-          f"{delta_percent: .3f}%{end} {note} {up_down}")
+          f"{delta_percent: .3f}%{end} {note} {up_down} {day_range}")
 
     tot_count = 0
     tot_cost = 0.0
