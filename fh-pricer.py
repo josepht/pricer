@@ -8,11 +8,17 @@ import json
 
 finnhub_client = finnhub.Client(api_key=API_KEY)
 
+price_data = {}
+
 with open(os.path.join(os.path.expanduser('~'), 'pricer.json'), 'r') as fp:
     data = json.load(fp)
     symbols = data['open']
     notes = data['notes']
     exclude_symbols = data['excludes']
+
+with open(os.path.join(os.path.expanduser('~'), 'pricer_price_data.json')) as fp:
+    price_data = json.load(fp)
+
 
 # Due to strict API usage limitations only query a few symbols
 symbols = {x: v for x, v in symbols.items() if x not in exclude_symbols}
@@ -21,12 +27,20 @@ comp_cur_value = 0.0
 comp_gain = 0.0
 
 for symbol in sorted(symbols):
-    time.sleep(0.20)
+    # time.sleep(0.20)
     shares = symbols[symbol]
-    data = finnhub_client.quote(symbol)
-    price = data['c']
-    delta = data['d']
-    delta_percent = data['dp']
+    if False:
+        data = finnhub_client.quote(symbol)
+        price = data['c']
+        delta = data['d']
+        delta_percent = data['dp']
+
+    if symbol not in price_data:
+        print(f"symbol {symbol} not in price data")
+
+    price = price_data[symbol]['price']
+    delta = price_data[symbol]['delta']
+    delta_percent = delta / price * 100
 
     if delta_percent < 0:
         fore = colorama.Fore.RED
