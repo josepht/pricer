@@ -58,7 +58,7 @@ def remove(args):
 
             item_count = 0
             held_count = 0
-            for item in values:
+            for item in sorted(values, key=lambda r: r[2]):
                 # skip sold positions
                 if len(values[item_count]) > HOLD_FIELD_COUNT:
                     item_count += 1
