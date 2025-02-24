@@ -382,8 +382,7 @@ def parse_args():
         'remove', aliases=['rm'], help='Remove a new position held')
     parser_remove.add_argument('symbol', help='Stock symbol')
     parser_remove.add_argument('price', type=float, help="sell price")
-    parser_remove.add_argument('index', type=int, default=0, nargs='?',
-                               help='Position index')
+    parser_remove.add_argument('index', type=int, help='Position index')
     parser_remove.add_argument('-d', '--date', default=dt,
                                help='Date of transaction')
     parser_remove.set_defaults(func=remove)
