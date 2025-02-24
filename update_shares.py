@@ -164,6 +164,8 @@ def until(args):
 
             item_count = 0
             held_count = 0
+            values = sorted(values, key=lambda r: r[1])
+            values = [x for x in values if x[0] > 1]
             for item in values:
                 # skip sold positions
                 if len(values[item_count]) > HOLD_FIELD_COUNT:
@@ -172,9 +174,10 @@ def until(args):
 
                 # we count the matching index entry
                 if held_count == index:
+                    share_data['open'][symbol].remove(item)
                     print(f"Adding 'until' to index {index}")
-                    values[item_count][2] = until
-                    share_data['open'][symbol] = values
+                    item[2] = until
+                    share_data['open'][symbol].append(item)
                     break
 
                 held_count += 1
