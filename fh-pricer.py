@@ -32,7 +32,7 @@ comp_gain = 0.0
 
 for symbol in sorted(symbols):
     # time.sleep(0.20)
-    shares = symbols[symbol]
+    shares = [x for x in symbols[symbol] if x[0] > 1]
 
     if False:
         data = finnhub_client.quote(symbol)
