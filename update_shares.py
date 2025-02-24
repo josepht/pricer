@@ -59,7 +59,9 @@ def remove(args):
             item_count = 0
             held_count = 0
             values = [x for x in values if x[0] > 1]
-            for item in sorted(values, key=lambda r: r[2]):
+            if not values:
+                continue
+            for item in sorted(values, key=lambda r: r[1]):
                 # skip sold positions
                 if len(values[item_count]) > HOLD_FIELD_COUNT:
                     item_count += 1
@@ -73,7 +75,7 @@ def remove(args):
                     new_entry = copy.copy(values[item_count])
                     new_entry.append(price)
                     new_entry.append(dt)
-                    del(share_data['open'][symbol][item_count])
+                    share_data['open'][symbol].remove(item)
                     share_data['closed'][symbol].append(new_entry)
                     break
 
