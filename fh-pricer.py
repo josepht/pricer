@@ -71,7 +71,7 @@ for symbol in sorted(symbols):
     tot_cur_value = 0.0
 
     sym_count = 0
-    for share in shares:
+    for share in sorted(shares, key=lambda r: r[1]):
 
         count, cost, hold, date, *rest = share
         if rest:  # This is a sold share
