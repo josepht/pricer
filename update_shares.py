@@ -100,6 +100,9 @@ def deuntil(args):
                 print("Invalid position")
                 return
 
+            values = sorted(values, key=lambda r: r[1])
+            values = [x for x in values if x[0] > 1]
+
             item_count = 0
             held_count = 0
             for item in values:
@@ -110,9 +113,10 @@ def deuntil(args):
 
                 # we count the matching index entry
                 if held_count == index:
+                    share_data['open'][symbol].remove(item)
                     print(f"Removing 'until' from index {index}")
-                    values[item_count][2] = None
-                    share_data['open'][symbol] = values
+                    item[2] = None
+                    share_data['open'][symbol].append(item)
                     break
 
                 held_count += 1
