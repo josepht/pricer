@@ -161,6 +161,10 @@ def until(args):
     index = args.index
     until = args.until
 
+    if not until:
+        until = (datetime.datetime.today() -
+                 datetime.timedelta(days=-1)).strftime('%Y-%m-%d')
+
     for item, values in share_data['open'].items():
         if item.upper() == symbol:
             print("Found {}".format(symbol))
