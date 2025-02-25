@@ -96,7 +96,7 @@ def deuntil(args):
     for item, values in share_data['open'].items():
         if item.upper() == symbol:
             print("Found {}".format(symbol))
-            if len(values) < index:
+            if index is not None and len(values) < index:
                 print("Invalid position")
                 return
 
@@ -112,12 +112,14 @@ def deuntil(args):
                     continue
 
                 # we count the matching index entry
-                if held_count == index:
+                if index is None or held_count == index:
                     share_data['open'][symbol].remove(item)
-                    print(f"Removing 'until' from index {index}")
+                    if index is not None:
+                        print(f"Removing 'until' from index {index}")
                     item[2] = None
                     share_data['open'][symbol].append(item)
-                    break
+                    if index is not None:
+                        break
 
                 held_count += 1
                 item_count += 1
@@ -400,15 +402,14 @@ def parse_args():
     parser_until = subparsers.add_parser(
         'until', help='Add "until" to a new position held')
     parser_until.add_argument('symbol', help='Stock symbol')
-    parser_until.add_argument('until', help="until note")
-    parser_until.add_argument('index', type=int, default=0, nargs='?',
-                               help='Position index')
+    parser_until.add_argument('index', type=int, help='Position index')
+    parser_until.add_argument('until', nargs='?', help="until note")
     parser_until.set_defaults(func=until)
 
     parser_deuntil = subparsers.add_parser(
         'deuntil', help='Remove "until" from a new position held')
     parser_deuntil.add_argument('symbol', help='Stock symbol')
-    parser_deuntil.add_argument('index', type=int, default=0, nargs='?',
+    parser_deuntil.add_argument('index', type=int, nargs='?',
                                 help='Position index')
     parser_deuntil.set_defaults(func=deuntil)
 
