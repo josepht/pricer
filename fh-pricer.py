@@ -126,12 +126,11 @@ for symbol in sorted(symbols):
     comp_gain += tot_value
 
     if tot_items > 1:
-        print("=============================================")
-        print(f"Tot       {tot_count: 8.3g} {tot_cost / tot_items: 8.02f} "
+        print("    =============================================")
+        print(f"    Tot   {tot_count: 8.3g} {tot_cost / tot_items: 8.02f} "
               f"{fore}{tot_delta / tot_items: >8.3f} "
               f"{tot_percent / tot_items: >8.3f}% {tot_value: >8.3f}{end}"
               f"  {tot_cur_value: >18.3f}")
-        print()
 
 if comp_gain < 0:
     comp_fore = colorama.Fore.RED
