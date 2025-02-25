@@ -58,7 +58,7 @@ def remove(args):
 
             item_count = 0
             held_count = 0
-            values = [x for x in values if x[0] > 1]
+            values = [x for x in values if x[0] >= 1]
             if not values:
                 continue
             for item in sorted(values, key=lambda r: r[1]):
@@ -101,7 +101,7 @@ def deuntil(args):
                 return
 
             values = sorted(values, key=lambda r: r[1])
-            values = [x for x in values if x[0] > 1]
+            values = [x for x in values if x[0] >= 1]
 
             item_count = 0
             held_count = 0
@@ -169,7 +169,7 @@ def until(args):
             item_count = 0
             held_count = 0
             values = sorted(values, key=lambda r: r[1])
-            values = [x for x in values if x[0] > 1]
+            values = [x for x in values if x[0] >= 1]
             for item in values:
                 # skip sold positions
                 if len(values[item_count]) > HOLD_FIELD_COUNT:
