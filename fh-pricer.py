@@ -1,13 +1,35 @@
+import datetime
+import json
+import os
+import time
+
 import colorama
 import finnhub
-import time
 from config import API_KEY
 
-import os
-import json
 
 finnhub_client = finnhub.Client(api_key=API_KEY)
 
+end = colorama.Style.RESET_ALL
+yellow = colorama.Fore.YELLOW
+
+price_data_file = os.path.join(os.path.expanduser('~'), 'pricer_price_data.json')
+
+def check_data_timestamp():
+    dt = datetime.datetime.today().strftime('%Y-%m-%d')
+    now = datetime.datetime.today()
+    data = datetime.datetime.fromtimestamp(os.path.getmtime(price_data_file))
+    delta = now - data
+    print(f"now: {now}, data: {data}, delta: {delta}")
+    if delta > datetime.timedelta(minutes=2):
+        fore = colorama.fore.RED
+        print(f"{red}price data may be old{end}\n")
+    else:
+        fore = colorama.Fore.GREEN
+        print(f"{fore}price data is fresh{end}\n")
+
+
+check_data_timestamp()
 price_data = {}
 quotes_data = {}
 
@@ -17,7 +39,7 @@ with open(os.path.join(os.path.expanduser('~'), 'pricer.json'), 'r') as fp:
     notes = data['notes']
     exclude_symbols = data['excludes']
 
-with open(os.path.join(os.path.expanduser('~'), 'pricer_price_data.json')) as fp:
+with open(price_data_file) as fp:
     price_data = json.load(fp)
 
 with open(os.path.join(os.path.expanduser('~'), 'pricer_quotes.json')) as fp:
@@ -54,9 +76,6 @@ for symbol in sorted(symbols):
         fore = colorama.Fore.GREEN
     else:
         fore = ""
-
-    end = colorama.Style.RESET_ALL
-    yellow = colorama.Fore.YELLOW
 
     note = ""
     if symbol in notes:
