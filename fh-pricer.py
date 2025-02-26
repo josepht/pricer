@@ -20,10 +20,10 @@ def check_data_timestamp():
     now = datetime.datetime.today()
     data = datetime.datetime.fromtimestamp(os.path.getmtime(price_data_file))
     delta = now - data
-    print(f"now: {now}, data: {data}, delta: {delta}")
-    if delta > datetime.timedelta(minutes=2):
-        fore = colorama.fore.RED
-        print(f"{red}price data may be old{end}\n")
+    # print(f"now: {now}, data: {data}, delta: {delta}")
+    if delta > datetime.timedelta(minutes=1):
+        fore = colorama.Fore.RED
+        print(f"{fore}price data may be old{end}\n")
     else:
         fore = colorama.Fore.GREEN
         print(f"{fore}price data is fresh{end}\n")
