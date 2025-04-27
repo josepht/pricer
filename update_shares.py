@@ -14,6 +14,11 @@ DEFAULT_LIMIT=-1  # no limit
 
 dt = datetime.datetime.today().strftime('%Y-%m-%d')
 
+quote_data_file = os.path.join(os.path.expanduser('~'), 'pricer_quotes.json')
+
+with open(quote_data_file) as fp:
+    quotes_data = json.load(fp)
+
 def add(args):
     print("Adding a new position")
     share_data = get_share_data(args.shares_file)
@@ -300,15 +305,20 @@ def show_open(args):
             total_shares += item[0]
             total_pl += pl
 
-            if pl < 0:
+            price = quotes_data[symbol][0]
+
+            delta = price - item[1]
+            delta_percent = delta / price * 100
+
+            if delta < 0:
                 fore = colorama.Fore.RED
-            elif pl > 0:
+            elif delta > 0:
                 fore = colorama.Fore.GREEN
             else:
                 fore = ""
 
             end = colorama.Style.RESET_ALL
-            print(f"    {item[0]}: {item[1]}: ${fore}{pl:.3f}{end}: {item[3]}")
+            print(f"    {item[0]}: {item[1]}: ${fore}{pl:.3f} {delta:.3f} {delta_percent:.2f}% {end}: {item[3]}")
             total += pl
 
         if len(held) > 1:
