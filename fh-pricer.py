@@ -14,22 +14,26 @@ end = colorama.Style.RESET_ALL
 yellow = colorama.Fore.YELLOW
 
 price_data_file = os.path.join(os.path.expanduser('~'), 'pricer_price_data.json')
+quote_data_file = os.path.join(os.path.expanduser('~'), 'pricer_quotes.json')
 
-def check_data_timestamp():
+def check_data_files(filename, minutes=1):
     dt = datetime.datetime.today().strftime('%Y-%m-%d')
     now = datetime.datetime.today()
-    data = datetime.datetime.fromtimestamp(os.path.getmtime(price_data_file))
+
+    data = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
     delta = now - data
     # print(f"now: {now}, data: {data}, delta: {delta}")
-    if delta > datetime.timedelta(minutes=1):
+    if delta > datetime.timedelta(minutes=minutes):
         fore = colorama.Fore.RED
-        print(f"{fore}price data may be old{end}\n")
     else:
         fore = colorama.Fore.GREEN
-        print(f"{fore}price data is fresh{end}\n")
+    print(f"{fore}{os.path.basename(filename)}{end}")
 
 
-check_data_timestamp()
+check_data_files(price_data_file)
+check_data_files(quote_data_file, minutes=6)
+print()
+
 price_data = {}
 quotes_data = {}
 
@@ -42,7 +46,7 @@ with open(os.path.join(os.path.expanduser('~'), 'pricer.json'), 'r') as fp:
 with open(price_data_file) as fp:
     price_data = json.load(fp)
 
-with open(os.path.join(os.path.expanduser('~'), 'pricer_quotes.json')) as fp:
+with open(quote_data_file) as fp:
     quotes_data = json.load(fp)
 
 
@@ -64,6 +68,7 @@ for symbol in sorted(symbols):
 
     if symbol not in price_data:
         print(f"symbol {symbol} not in price data")
+        continue
 
     price = price_data[symbol]['price']
     delta = price - quotes_data[symbol][0]
@@ -145,7 +150,7 @@ for symbol in sorted(symbols):
     comp_gain += tot_value
 
     if tot_items > 1:
-        print("    =============================================")
+        print("    ===================================================")
         print(f"    Tot   {tot_count: 8.3g} {tot_cost / tot_items: 8.02f} "
               f"{fore}{tot_delta / tot_items: >8.3f} "
               f"{tot_percent / tot_items: >8.3f}% {tot_value: >8.3f}{end}"
